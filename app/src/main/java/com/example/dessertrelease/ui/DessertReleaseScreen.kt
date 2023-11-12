@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,9 +59,7 @@ import com.example.dessertrelease.ui.theme.DessertReleaseTheme
  */
 @Composable
 fun DessertReleaseApp(
-    dessertReleaseViewModel: DessertReleaseViewModel = viewModel(
-        factory = DessertReleaseViewModel.Factory
-    )
+    dessertReleaseViewModel: DessertReleaseViewModel = viewModel()
 ) {
     DessertReleaseScreen(
         uiState = dessertReleaseViewModel.uiState.collectAsState().value,
@@ -104,16 +103,18 @@ private fun DessertReleaseScreen(
                 start = dimensionResource(R.dimen.padding_medium),
                 end = dimensionResource(R.dimen.padding_medium),
             )
-        if (isLinearLayout) {
-            DessertReleaseLinearLayout(
-                modifier = modifier.fillMaxWidth(),
-                contentPadding = innerPadding
-            )
-        } else {
-            DessertReleaseGridLayout(
-                modifier = modifier,
-                contentPadding = innerPadding,
-            )
+        if (!uiState.isLoading) {
+            if (isLinearLayout) {
+                DessertReleaseLinearLayout(
+                    modifier = modifier.fillMaxWidth(),
+                    contentPadding = innerPadding
+                )
+            } else {
+                DessertReleaseGridLayout(
+                    modifier = modifier,
+                    contentPadding = innerPadding,
+                )
+            }
         }
     }
 }
@@ -154,7 +155,7 @@ fun DessertReleaseLinearLayout(
 fun DessertReleaseGridLayout(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp)
-    ) {
+) {
     LazyVerticalGrid(
         modifier = modifier,
         columns = GridCells.Fixed(3),

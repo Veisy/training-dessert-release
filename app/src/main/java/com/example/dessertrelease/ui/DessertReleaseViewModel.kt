@@ -16,37 +16,41 @@
 package com.example.dessertrelease.ui
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.lifecycle.viewModelScope
 import com.example.dessertrelease.R
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.dessertrelease.data.UserPreferencesRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /*
  * View model of Dessert Release components
  */
-class DessertReleaseViewModel() : ViewModel() {
-
-    private val _uiState = MutableStateFlow(DessertReleaseUiState())
+@HiltViewModel
+class DessertReleaseViewModel @Inject constructor(
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel() {
 
     // UI states access for various [DessertReleaseUiState]
-    val uiState: StateFlow<DessertReleaseUiState> = _uiState
+    val uiState: StateFlow<DessertReleaseUiState> =
+        userPreferencesRepository.isLinearLayout.map { isLinearLayout ->
+            DessertReleaseUiState(isLinearLayout = isLinearLayout, isLoading = false)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = DessertReleaseUiState(isLoading = true)
+        )
 
     /*
      * [selectLayout] change the layout and icons accordingly and
      * save the selection in DataStore through [userPreferencesRepository]
      */
-    fun selectLayout(isLinearLayout: Boolean) {
-        _uiState.value = DessertReleaseUiState(isLinearLayout)
-    }
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                DessertReleaseViewModel()
-            }
-        }
+    fun selectLayout(isLinearLayout: Boolean) = viewModelScope.launch {
+        userPreferencesRepository.saveLayoutPreferences(isLinearLayout)
     }
 }
 
@@ -54,6 +58,7 @@ class DessertReleaseViewModel() : ViewModel() {
  * Data class containing various UI States for Dessert Release screens
  */
 data class DessertReleaseUiState(
+    val isLoading: Boolean = false,
     val isLinearLayout: Boolean = true,
     val toggleContentDescription: Int =
         if (isLinearLayout) R.string.grid_layout_toggle else R.string.linear_layout_toggle,

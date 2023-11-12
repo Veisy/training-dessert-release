@@ -38,6 +38,8 @@ object LocalDessertReleaseData {
         "Quince Tart",
         "Red Velvet Cake",
         "Snow Cone",
-        "Tiramisu"
+        "Tiramisu",
+        "Upside Down Cake",
+        "Vanilla Ice Cream"
     )
 }
